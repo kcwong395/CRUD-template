@@ -50,12 +50,31 @@ func (p *PersonApi) AddPerson(ginContext *gin.Context) {
 	}
 }
 
+func (p *PersonApi) UpdatePersonById(ginContext *gin.Context) {
+	peopleCollection := p.DBWrapper.DB.Collection("people")
+
+	id, _ := primitive.ObjectIDFromHex(ginContext.Param("id"))
+
+	person := model.Person{}
+	err := ginContext.ShouldBind(&person)
+	if err == nil {
+		result, _ := peopleCollection.ReplaceOne(context.Background(), bson.M{"_id": id}, person)
+		if result != nil {
+			ginContext.IndentedJSON(200, result)
+		} else {
+			_ = ginContext.AbortWithError(404, errors.New("person does not exist"))
+		}
+	} else {
+		_ = ginContext.AbortWithError(404, errors.New("input parameters are problematic"))
+	}
+}
+
 func (p *PersonApi) DeletePersonById(ginContext *gin.Context) {
 	peopleCollection := p.DBWrapper.DB.Collection("people")
 
-	id, err := primitive.ObjectIDFromHex(ginContext.Param("id"))
+	id, _ := primitive.ObjectIDFromHex(ginContext.Param("id"))
 
-	_, err = peopleCollection.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: id}})
+	_, err := peopleCollection.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: id}})
 
 	if err == nil {
 		ginContext.IndentedJSON(200, http.StatusOK)

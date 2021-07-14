@@ -22,6 +22,7 @@ func main() {
 	personApi := api.PersonApi{DBWrapper: dbw}
 	engine.GET("/people", personApi.GetPeople)
 	engine.POST("/people", personApi.AddPerson)
+	engine.PUT("/people/:id", personApi.UpdatePersonById)
 	engine.DELETE("/people/:id", personApi.DeletePersonById)
 
 	// Start the go server
