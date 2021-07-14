@@ -7,7 +7,9 @@ import (
 	"github.com/kcwong395/go-gin-mongo/dbUtil"
 	"github.com/kcwong395/go-gin-mongo/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
+	"net/http"
 )
 
 type PersonApi struct {
@@ -45,5 +47,19 @@ func (p *PersonApi) AddPerson(ginContext *gin.Context) {
 		_ = ginContext.AbortWithError(500, errors.New("fail to add person"))
 	} else {
 		ginContext.IndentedJSON(201, result)
+	}
+}
+
+func (p *PersonApi) DeletePersonById(ginContext *gin.Context) {
+	peopleCollection := p.DBWrapper.DB.Collection("people")
+
+	id, err := primitive.ObjectIDFromHex(ginContext.Param("id"))
+
+	_, err = peopleCollection.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: id}})
+
+	if err == nil {
+		ginContext.IndentedJSON(200, http.StatusOK)
+	} else {
+		_ = ginContext.AbortWithError(404, errors.New("target person does not exist"))
 	}
 }
