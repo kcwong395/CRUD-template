@@ -21,6 +21,7 @@ func main() {
 	// define the route here
 	personApi := api.PersonApi{DBWrapper: dbw}
 	engine.GET("/people", personApi.GetPeople)
+	engine.POST("/people", personApi.AddPerson)
 
 	// Start the go server
 	if err := engine.Run(); err != nil {

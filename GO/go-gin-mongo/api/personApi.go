@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/kcwong395/go-gin-mongo/dbUtil"
+	"github.com/kcwong395/go-gin-mongo/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
 )
@@ -26,4 +28,22 @@ func (p *PersonApi) GetPeople(ginContext *gin.Context) {
 	}
 
 	ginContext.IndentedJSON(200, people)
+}
+
+func (p *PersonApi) AddPerson(ginContext *gin.Context) {
+	peopleCollection := p.DBWrapper.DB.Collection("people")
+
+	person := model.Person{}
+	err := ginContext.ShouldBind(&person)
+	if err != nil {
+		_ = ginContext.AbortWithError(500, errors.New("input parameters are problematic"))
+		return
+	}
+
+	result, err := peopleCollection.InsertOne(context.Background(), person)
+	if err != nil {
+		_ = ginContext.AbortWithError(500, errors.New("fail to add person"))
+	} else {
+		ginContext.IndentedJSON(201, result)
+	}
 }
